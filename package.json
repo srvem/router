@@ -1,0 +1,19 @@
+{
+  "name": "@srvem/router",
+  "version": "0.0.0",
+  "description": "",
+  "main": "build/main.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/srvem/router.git"
+  },
+  "author": "Kaleab S. Melkie <kaleabmelkie@gmail.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/srvem/router/issues"
+  },
+  "homepage": "https://github.com/srvem/router#readme"
+}
