@@ -21,7 +21,6 @@ var SrvRouter = (function (_super) {
         _this.routes = [];
         return _this;
     }
-    // todo: test this
     SrvRouter.prototype.main = function () {
         var _this = this;
         var matches = this.routes.map(function (route) {

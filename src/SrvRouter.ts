@@ -16,7 +16,6 @@ export class SrvRouter extends SrvMiddleware {
     super()
   }
 
-  // todo: test this
   main(): void {
     let matches: IRoute[] = this.routes.map(
       (route: IRoute): IRoute =>
