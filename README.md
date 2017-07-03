@@ -54,24 +54,21 @@ app.start().listen(80)
 // SrvMiddleware is from the '@srvem/middleware' module
 class SrvRouter extends SrvMiddleware {
 
-  // prefix for the path can be passed as a parameter
-  constructor(prefix?: string);
-
   addRoute(
     method: null | 'GET' | 'POST' | 'PUT' | 'DELETE',
     path: string,
     ...handlers: ((request: IncomingMessage, response: ServerResponse) => void)[]
-  ): void;
+  ): void
 
-  all(path: string, ...handlers: ((request: IncomingMessage, response: ServerResponse) => void)[]): void;
+  all(path: string, ...handlers: ((request: IncomingMessage, response: ServerResponse) => void)[]): void
   
-  get(path: string, ...handlers: ((request: IncomingMessage, response: ServerResponse) => void)[]): void;
+  get(path: string, ...handlers: ((request: IncomingMessage, response: ServerResponse) => void)[]): void
   
-  post(path: string, ...handlers: ((request: IncomingMessage, response: ServerResponse) => void)[]): void;
+  post(path: string, ...handlers: ((request: IncomingMessage, response: ServerResponse) => void)[]): void
   
-  put(path: string, ...handlers: ((request: IncomingMessage, response: ServerResponse) => void)[]): void;
+  put(path: string, ...handlers: ((request: IncomingMessage, response: ServerResponse) => void)[]): void
   
-  del(path: string, ...handlers: ((request: IncomingMessage, response: ServerResponse) => void)[]): void;
+  del(path: string, ...handlers: ((request: IncomingMessage, response: ServerResponse) => void)[]): void
 
 }
 
@@ -88,3 +85,5 @@ Kaleab S. Melkie (<kaleabmelkie@gmail.com>)
 # License
 MIT License  
 Copyright &copy; 2017 srvem
+  
+Made with &#10084; in Addis Ababa.
