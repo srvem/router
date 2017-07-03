@@ -5,38 +5,48 @@ import { parse } from 'url'
 interface IRoute {
   method: null | 'GET' | 'POST' | 'PUT' | 'DELETE'
   path: string
-  handlers: ((request: IncomingMessage, response: ServerResponse) => void)[]
+  handlers: ((request: IncomingMessage, response: ServerResponse, next: () => Promise<any>) => Promise<any>)[] // todo
 }
 
 export class SrvRouter extends SrvMiddleware {
-
   private routes: IRoute[] = []
+  private i: number = null // an index for all route handlers
 
   constructor(private prefix: string = '') {
     super()
   }
 
   main(): void {
-    let matches: IRoute[] = this.routes.map(
-      (route: IRoute): IRoute =>
-        this.request.url === parse(this.prefix + route.path).pathname
-        && this.request.method === route.method
-        ? route : null
+    // filter the routes matching the request
+    const matches: IRoute[] = this.routes.filter(
+      (route: IRoute) =>
+        this.request.url.toLowerCase() === parse(this.prefix + route.path).pathname.toLowerCase() &&
+        (route.method === null || this.request.method.toUpperCase() === route.method.toUpperCase())
     )
     
-    matches.forEach(
-      (route: IRoute): void =>
-        route.handlers.forEach(
-          (handler: (request: IncomingMessage, response: ServerResponse) => void): void =>
-            handler(this.request, this.response)
-        )
-    )
+    // merge the handlers of the matched routes
+    const handlers: ((request: IncomingMessage, response: ServerResponse, next: () => Promise<any>) => Promise<any>)[] = []
+    for (const route of matches)
+      for (const handler of route.handlers)
+        handlers.push(handler)
+    
+    // handle the request using the 'handlers'
+    this.i = -1;
+    this.handleNext(handlers)
+  }
+
+  private async handleNext(handlers): Promise<void> {
+    if (this.i !== null && handlers[++this.i])
+      return handlers[this.i](this.request, this.response, async (): Promise<any> => this.handleNext(handlers))
+      .then(async (): Promise<any> => this.handleNext(handlers))
+    else
+      return null;
   }
 
   addRoute(
     method: null | 'GET' | 'POST' | 'PUT' | 'DELETE',
     path: string,
-    ...handlers: ((request: IncomingMessage, response: ServerResponse) => void)[]
+    ...handlers: ((request: IncomingMessage, response: ServerResponse, next: () => Promise<any>) => Promise<any>)[]
   ): void {
     this.routes.push({
       method: method,
@@ -45,23 +55,38 @@ export class SrvRouter extends SrvMiddleware {
     })
   }
 
-  all (path: string, ...handlers: ((request: IncomingMessage, response: ServerResponse) => void)[]): void {
+  all(
+    path: string,
+    ...handlers: ((request: IncomingMessage, response: ServerResponse, next: () => Promise<any>) => Promise<any>)[]
+  ): void {
     this.addRoute(null, path, ...handlers)
   }
 
-  get (path: string, ...handlers: ((request: IncomingMessage, response: ServerResponse) => void)[]): void {
+  get(
+    path: string,
+    ...handlers: ((request: IncomingMessage, response: ServerResponse, next: () => Promise<any>) => Promise<any>)[]
+  ): void {
     this.addRoute('GET', path, ...handlers)
   }
 
-  post (path: string, ...handlers: ((request: IncomingMessage, response: ServerResponse) => void)[]): void {
+  post(
+    path: string,
+    ...handlers: ((request: IncomingMessage, response: ServerResponse, next: () => Promise<any>) => Promise<any>)[]
+  ): void {
     this.addRoute('POST', path, ...handlers)
   }
 
-  put (path: string, ...handlers: ((request: IncomingMessage, response: ServerResponse) => void)[]): void {
+  put(
+    path: string,
+    ...handlers: ((request: IncomingMessage, response: ServerResponse, next: () => Promise<any>) => Promise<any>)[]
+  ): void {
     this.addRoute('PUT', path, ...handlers)
   }
 
-  del (path: string, ...handlers: ((request: IncomingMessage, response: ServerResponse) => void)[]): void {
+  del(
+    path: string,
+    ...handlers: ((request: IncomingMessage, response: ServerResponse, next: () => Promise<any>) => Promise<any>)[]
+  ): void {
     this.addRoute('DELETE', path, ...handlers)
   }
 }
