@@ -1,4 +1,1 @@
-import { SrvRouter } from './SrvRouter'
-
-export { SrvRouter }
-export default { SrvRouter }
+export { SrvRouter } from './SrvRouter'
