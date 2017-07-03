@@ -1,6 +1,4 @@
 # @srvem/router
-  
-## Introduction
 A servem middleware used to develop routers and server APIs with asynchronous request handlers.
   
 ## Installation
@@ -88,5 +86,5 @@ class SrvRouter extends SrvMiddleware {
 Kaleab S. Melkie (<kaleabmelkie@gmail.com>)
   
 # License
-MIT License
-Copyright (c) 2017 srvem
+MIT License  
+Copyright &copy; 2017 srvem
