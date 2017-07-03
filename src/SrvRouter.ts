@@ -1,11 +1,10 @@
-import { SrvMiddleware } from '@srvem/middleware'
-import { IncomingMessage, ServerResponse } from 'http'
+import { SrvMiddleware, SrvRequest, SrvResponse } from '@srvem/middleware'
 import { parse } from 'url'
 
 interface IRoute {
   method: null | 'GET' | 'POST' | 'PUT' | 'DELETE'
   path: string
-  handlers: ((request: IncomingMessage, response: ServerResponse, next: () => Promise<any>) => Promise<any>)[] // todo
+  handlers: ((request: SrvRequest, response: SrvResponse, next: () => Promise<any>) => Promise<any>)[] // todo
 }
 
 export class SrvRouter extends SrvMiddleware {
@@ -25,7 +24,7 @@ export class SrvRouter extends SrvMiddleware {
     )
     
     // merge the handlers of the matched routes
-    const handlers: ((request: IncomingMessage, response: ServerResponse, next: () => Promise<any>) => Promise<any>)[] = []
+    const handlers: ((request: SrvRequest, response: SrvResponse, next: () => Promise<any>) => Promise<any>)[] = []
     for (const route of matches)
       for (const handler of route.handlers)
         handlers.push(handler)
@@ -46,7 +45,7 @@ export class SrvRouter extends SrvMiddleware {
   addRoute(
     method: null | 'GET' | 'POST' | 'PUT' | 'DELETE',
     path: string,
-    ...handlers: ((request: IncomingMessage, response: ServerResponse, next: () => Promise<any>) => Promise<any>)[]
+    ...handlers: ((request: SrvRequest, response: SrvResponse, next: () => Promise<any>) => Promise<any>)[]
   ): void {
     this.routes.push({
       method: method,
@@ -57,35 +56,35 @@ export class SrvRouter extends SrvMiddleware {
 
   all(
     path: string,
-    ...handlers: ((request: IncomingMessage, response: ServerResponse, next: () => Promise<any>) => Promise<any>)[]
+    ...handlers: ((request: SrvRequest, response: SrvResponse, next: () => Promise<any>) => Promise<any>)[]
   ): void {
     this.addRoute(null, path, ...handlers)
   }
 
   get(
     path: string,
-    ...handlers: ((request: IncomingMessage, response: ServerResponse, next: () => Promise<any>) => Promise<any>)[]
+    ...handlers: ((request: SrvRequest, response: SrvResponse, next: () => Promise<any>) => Promise<any>)[]
   ): void {
     this.addRoute('GET', path, ...handlers)
   }
 
   post(
     path: string,
-    ...handlers: ((request: IncomingMessage, response: ServerResponse, next: () => Promise<any>) => Promise<any>)[]
+    ...handlers: ((request: SrvRequest, response: SrvResponse, next: () => Promise<any>) => Promise<any>)[]
   ): void {
     this.addRoute('POST', path, ...handlers)
   }
 
   put(
     path: string,
-    ...handlers: ((request: IncomingMessage, response: ServerResponse, next: () => Promise<any>) => Promise<any>)[]
+    ...handlers: ((request: SrvRequest, response: SrvResponse, next: () => Promise<any>) => Promise<any>)[]
   ): void {
     this.addRoute('PUT', path, ...handlers)
   }
 
   del(
     path: string,
-    ...handlers: ((request: IncomingMessage, response: ServerResponse, next: () => Promise<any>) => Promise<any>)[]
+    ...handlers: ((request: SrvRequest, response: SrvResponse, next: () => Promise<any>) => Promise<any>)[]
   ): void {
     this.addRoute('DELETE', path, ...handlers)
   }
