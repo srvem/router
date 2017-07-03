@@ -1,9 +1,8 @@
 import { SrvMiddleware, SrvRequest, SrvResponse } from '@srvem/middleware';
 export declare class SrvRouter extends SrvMiddleware {
-    private prefix;
     private routes;
     private i;
-    constructor(prefix?: string);
+    constructor();
     main(): void;
     private handleNext(handlers);
     addRoute(method: null | 'GET' | 'POST' | 'PUT' | 'DELETE', path: string, ...handlers: ((request: SrvRequest, response: SrvResponse, next: () => Promise<any>) => Promise<any>)[]): void;

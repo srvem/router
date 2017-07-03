@@ -4,14 +4,14 @@ import { parse } from 'url'
 interface IRoute {
   method: null | 'GET' | 'POST' | 'PUT' | 'DELETE'
   path: string
-  handlers: ((request: SrvRequest, response: SrvResponse, next: () => Promise<any>) => Promise<any>)[] // todo
+  handlers: ((request: SrvRequest, response: SrvResponse, next: () => Promise<any>) => Promise<any>)[]
 }
 
 export class SrvRouter extends SrvMiddleware {
   private routes: IRoute[] = []
   private i: number = null // an index for all route handlers
 
-  constructor(private prefix: string = '') {
+  constructor() {
     super()
   }
 
@@ -19,7 +19,7 @@ export class SrvRouter extends SrvMiddleware {
     // filter the routes matching the request
     const matches: IRoute[] = this.routes.filter(
       (route: IRoute) =>
-        this.request.url.toLowerCase() === parse(this.prefix + route.path).pathname.toLowerCase() &&
+        this.request.url.toLowerCase() === parse(route.path).path.toLowerCase() &&
         (route.method === null || this.request.method.toUpperCase() === route.method.toUpperCase())
     )
     

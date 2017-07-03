@@ -49,10 +49,8 @@ var middleware_1 = require("@srvem/middleware");
 var url_1 = require("url");
 var SrvRouter = (function (_super) {
     __extends(SrvRouter, _super);
-    function SrvRouter(prefix) {
-        if (prefix === void 0) { prefix = ''; }
+    function SrvRouter() {
         var _this = _super.call(this) || this;
-        _this.prefix = prefix;
         _this.routes = [];
         _this.i = null;
         return _this;
@@ -60,7 +58,7 @@ var SrvRouter = (function (_super) {
     SrvRouter.prototype.main = function () {
         var _this = this;
         var matches = this.routes.filter(function (route) {
-            return _this.request.url.toLowerCase() === url_1.parse(_this.prefix + route.path).pathname.toLowerCase() &&
+            return _this.request.url.toLowerCase() === url_1.parse(route.path).path.toLowerCase() &&
                 (route.method === null || _this.request.method.toUpperCase() === route.method.toUpperCase());
         });
         var handlers = [];
