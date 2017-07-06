@@ -75,14 +75,13 @@ class SrvRouter extends SrvMiddleware {
 ```
   
 ## See Also
-- [@srvem/app](https://github.com/srvem/app) a super-fast and minimalist TypeScript middleware-oriented server for Node.js.
+- [@srvem/app](https://github.com/srvem/app) a super-fast and minimalist middleware-oriented and Promise-based asynchronous TypeScript server for Node.js.
 - [@srvem/static](https://github.com/srvem/static) to serve static files from a specified directory.
-- [@srvem/middleware](https://github.com/srvem/static) to create your own custom middleware for Srvem apps.
   
 ## Credits
-Kaleab S. Melkie (<kaleabmelkie@gmail.com>)
+Kaleab S. Melkie _<<kaleabmelkie@gmail.com>>_
   
-# License
+## License
 MIT License  
 Copyright &copy; 2017 srvem
   

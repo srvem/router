@@ -1,13 +1,13 @@
-import { SrvMiddleware, SrvRequest, SrvResponse } from '@srvem/middleware'
+import { SrvContext, SrvMiddlewareBlueprint } from '@srvem/app'
 import { parse } from 'url'
 
 interface IRoute {
   method: null | 'GET' | 'POST' | 'PUT' | 'DELETE'
   path: string
-  handlers: ((request: SrvRequest, response: SrvResponse, next: () => Promise<any>) => Promise<any>)[]
+  handlers: SrvHandlerType[]
 }
 
-export class SrvRouter extends SrvMiddleware {
+export class SrvRouter extends SrvMiddlewareBlueprint {
   private routes: IRoute[] = []
   private i: number = null // an index for all route handlers
 
@@ -15,23 +15,26 @@ export class SrvRouter extends SrvMiddleware {
     super()
   }
 
-  main(): void {
-    // filter the routes matching the request
-    const matches: IRoute[] = this.routes.filter(
-      (route: IRoute) =>
-        this.request.url.toLowerCase() === parse(route.path).path.toLowerCase() &&
-        (route.method === null || this.request.method.toUpperCase() === route.method.toUpperCase())
-    )
-    
-    // merge the handlers of the matched routes
-    const handlers: ((request: SrvRequest, response: SrvResponse, next: () => Promise<any>) => Promise<any>)[] = []
-    for (const route of matches)
-      for (const handler of route.handlers)
-        handlers.push(handler)
-    
-    // handle the request using the 'handlers'
-    this.i = -1;
-    this.handleNext(handlers)
+  async main(ctx: SrvContext): CtxPromiseType {
+    return new Promise((resolve: CtxResolveType, reject: PromiseRejectType) => {
+      // filter the routes matching the request
+      const matches: IRoute[] = this.routes.filter(
+        (route: IRoute) =>
+          ctx.request.url.toLowerCase() === parse(route.path).path.toLowerCase() &&
+          (route.method === null || ctx.request.method.toUpperCase() === route.method.toUpperCase())
+      )
+      
+      // merge the handlers of the matched routes
+      const handlers: SrvHandlerType[] = []
+      for (const route of matches)
+        for (const handler of route.handlers)
+          handlers.push(handler)
+      
+      // handle the request using the 'handlers'
+      this.i = -1;
+      this.handleNext(handlers)
+        //todo.then
+    })
   }
 
   private async handleNext(handlers): Promise<any> {

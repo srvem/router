@@ -24,6 +24,9 @@
   ],
   "author": "Kaleab S. Melkie <kaleabmelkie@gmail.com>",
   "license": "MIT",
+  "engines": {
+    "node": ">=8.1.2"
+  },
   "bugs": {
     "url": "https://github.com/srvem/router/issues"
   },
