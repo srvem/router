@@ -1,8 +1,6 @@
 import { CtxPromiseType, CtxResolveType, PromiseRejectType, SrvContext, SrvHandlerType, SrvMiddlewareBlueprint } from '@srvem/app'
 import { parse } from 'url'
 
-// todo update package to support @srvem/app v0.4+
-
 interface IRoute {
   method: null | 'GET' | 'POST' | 'PUT' | 'DELETE'
   path: string
@@ -34,23 +32,38 @@ export class SrvRouter extends SrvMiddlewareBlueprint {
       
       // handle the request using the 'handlers'
       this.i = -1;
-      this.handleNext(handlers)
-        //todo.then
+      this.handleNext(ctx, handlers)
+        .then((lastCtx: SrvContext): SrvContext | PromiseLike<SrvContext> => {
+          resolve(lastCtx)
+          return lastCtx
+        })
+        .catch((reason: any): never | PromiseLike<never> => {
+          reject(reason)
+          return null
+        })
     })
   }
 
-  private async handleNext(handlers): Promise<any> {
-    if (this.i !== null && handlers[++this.i])
-      return handlers[this.i](this.request, this.response, async (): Promise<any> => this.handleNext(handlers))
-      .then(async (): Promise<any> => this.handleNext(handlers))
-    else
-      return null;
+  private async handleNext(ctx: SrvContext, handlers: SrvHandlerType[]): CtxPromiseType {
+    return new Promise((resolve: CtxResolveType, reject: PromiseRejectType): void => {
+      if (this.i !== null && handlers[++this.i])
+        resolve(
+          handlers[this.i](ctx, async (): CtxPromiseType => this.handleNext(ctx, handlers))
+            .then((newerCtx: SrvContext): SrvContext | PromiseLike<SrvContext> => this.handleNext(newerCtx, handlers))
+            .catch((reason: any): never | PromiseLike<never> => {
+              reject(reason)
+              return null
+            })
+        )
+      else
+        resolve(ctx)
+    })
   }
 
   addRoute(
     method: null | 'GET' | 'POST' | 'PUT' | 'DELETE',
     path: string,
-    ...handlers: ((request: SrvRequest, response: SrvResponse, next: () => Promise<any>) => Promise<any>)[]
+    ...handlers: SrvHandlerType[]
   ): void {
     this.routes.push({
       method: method,
@@ -59,38 +72,23 @@ export class SrvRouter extends SrvMiddlewareBlueprint {
     })
   }
 
-  all(
-    path: string,
-    ...handlers: ((request: SrvRequest, response: SrvResponse, next: () => Promise<any>) => Promise<any>)[]
-  ): void {
+  all(path: string, ...handlers: SrvHandlerType[]): void {
     this.addRoute(null, path, ...handlers)
   }
 
-  get(
-    path: string,
-    ...handlers: ((request: SrvRequest, response: SrvResponse, next: () => Promise<any>) => Promise<any>)[]
-  ): void {
+  get(path: string, ...handlers: SrvHandlerType[]): void {
     this.addRoute('GET', path, ...handlers)
   }
 
-  post(
-    path: string,
-    ...handlers: ((request: SrvRequest, response: SrvResponse, next: () => Promise<any>) => Promise<any>)[]
-  ): void {
+  post(path: string, ...handlers: SrvHandlerType[]): void {
     this.addRoute('POST', path, ...handlers)
   }
 
-  put(
-    path: string,
-    ...handlers: ((request: SrvRequest, response: SrvResponse, next: () => Promise<any>) => Promise<any>)[]
-  ): void {
+  put(path: string, ...handlers: SrvHandlerType[]): void {
     this.addRoute('PUT', path, ...handlers)
   }
 
-  del(
-    path: string,
-    ...handlers: ((request: SrvRequest, response: SrvResponse, next: () => Promise<any>) => Promise<any>)[]
-  ): void {
+  del(path: string, ...handlers: SrvHandlerType[]): void {
     this.addRoute('DELETE', path, ...handlers)
   }
 }
