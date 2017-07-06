@@ -34,7 +34,7 @@ export class SrvRouter extends SrvMiddleware {
     this.handleNext(handlers)
   }
 
-  private async handleNext(handlers): Promise<void> {
+  private async handleNext(handlers): Promise<any> {
     if (this.i !== null && handlers[++this.i])
       return handlers[this.i](this.request, this.response, async (): Promise<any> => this.handleNext(handlers))
       .then(async (): Promise<any> => this.handleNext(handlers))
