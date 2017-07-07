@@ -16,11 +16,18 @@
   },
   "keywords": [
     "srvem",
+    "srv",
+    "em",
     "middleware",
     "route",
     "router",
     "API",
-    "REST"
+    "REST",
+    "get",
+    "post",
+    "put",
+    "delete",
+    "head"
   ],
   "author": "Kaleab S. Melkie <kaleabmelkie@gmail.com>",
   "license": "MIT",
