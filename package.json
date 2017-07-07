@@ -1,6 +1,6 @@
 {
   "name": "@srvem/router",
-  "version": "0.4.1",
+  "version": "0.4.2",
   "description": "A servem middleware used to develop routers and server APIs with asynchronous request handlers.",
   "main": "build/main.js",
   "typings": "build/main.d.ts",
