@@ -1,71 +1,81 @@
-import { CtxPromiseType, CtxResolveType, PromiseRejectType, SrvContext, SrvHandlerType, SrvMiddlewareBlueprint } from '@srvem/app'
+import { Context, MiddlewareBlueprint } from '@srvem/app'
 import { parse } from 'url'
 
-interface IRoute {
-  method: null | 'GET' | 'POST' | 'PUT' | 'DELETE'
-  path: string
-  handlers: SrvHandlerType[]
-}
+import { IRoute, RouteHandlerType } from './IRoute'
 
-export class SrvRouter extends SrvMiddlewareBlueprint {
+/**
+ * Used to develop routers and server APIs with asynchronous request handlers.
+ */
+export class SrvRouter extends MiddlewareBlueprint {
+  /**
+   * An array to store routes.
+   */
   private routes: IRoute[] = []
-  private i: number = -1 // an index for all route handlers
 
+  /**
+   * An index for all route handlers; indicates progress.
+   */
+  private i: number = -1
+
+  /**
+   * Constructs the SrvRouter middleware.
+   */
   constructor() {
     super()
   }
 
-  async main(ctx: SrvContext): CtxPromiseType {
-    return new Promise((resolve: CtxResolveType, reject: PromiseRejectType): void => {
-      // filter the routes matching the request
-      const matches: IRoute[] = this.routes.filter(
-        (route: IRoute) =>
-          ctx.request.url.toLowerCase() === parse(route.path).path.toLowerCase() &&
-          (route.method === null || ctx.request.method.toUpperCase() === route.method.toUpperCase())
-      )
-      
-      // merge the handlers of the matched routes
-      const merged: SrvHandlerType[] = []
-      for (const match of matches)
-        for (const handler of match.handlers)
-          merged.push(handler)
-      
-      // handle the request using the 'handlers'
-      this._handleNext(ctx, merged)
-        .then((lastCtx: SrvContext): SrvContext | PromiseLike<SrvContext> => {
-          this.i = -1
-          resolve(lastCtx)
-          return lastCtx
-        })
-        .catch((reason: any): never | PromiseLike<never> => {
-          this.i = -1
-          reject(reason)
-          return null
-        })
-    })
+  /**
+   * Filters routes by the requests method and URL, then fires thier respective handlers.
+   * 
+   * @param ctx The Context
+   */
+  async main(ctx: Context): Promise<void> {
+    // filter the routes matching the request
+    const matches: IRoute[] = this.routes.filter(
+      (route: IRoute) =>
+        ctx.request.url.toLowerCase() === parse(route.path).path.toLowerCase() &&
+        (route.method === null || ctx.request.method.toUpperCase() === route.method.toUpperCase())
+    )
+    
+    // merge the handlers of the matched routes
+    const merged: RouteHandlerType[] = []
+    for (const match of matches)
+      for (const handler of match.handlers)
+        merged.push(handler)
+    
+    // handle the request using the 'handlers'
+    await this._handleNext(ctx, merged)
+
+    // reset i
+    this.i = -1
   }
 
-  private async _handleNext(ctx: SrvContext, handlers: SrvHandlerType[]): CtxPromiseType {
-    return new Promise((resolve: CtxResolveType, reject: PromiseRejectType): void => {
-      if (handlers[++this.i])
-        handlers[this.i](ctx, async (): CtxPromiseType => this._handleNext(ctx, handlers)) // todo check next
-          .then((newerCtx: SrvContext): SrvContext | PromiseLike<SrvContext> => {
-            resolve(this._handleNext(newerCtx, handlers))
-            return newerCtx
-          })
-          .catch((reason: any): never | PromiseLike<never> => {
-            reject(reason)
-            return null
-          })
-      else
-        resolve(ctx)
-    })
+  /**
+   * Fires the next handler using this.i as the index.
+   * 
+   * @param ctx The Context
+   * @param handlers Route handler(s)
+   */
+  private async _handleNext(ctx: Context, handlers: RouteHandlerType[]): Promise<void> {
+    if (!handlers[++this.i]) // done
+      return
+    
+    await handlers[this.i](ctx, async (): Promise<void> => this._handleNext(ctx, handlers))
+
+    return this._handleNext(ctx, handlers)
   }
 
+  /**
+   * Adds a route and its handler(s).
+   * 
+   * @param method Request method
+   * @param path Request path
+   * @param handlers Route handler(s)
+   */
   addRoute(
-    method: null | 'GET' | 'POST' | 'PUT' | 'DELETE',
+    method: string,
     path: string,
-    ...handlers: SrvHandlerType[]
+    ...handlers: RouteHandlerType[]
   ): void {
     this.routes.push({
       method: method,
@@ -74,23 +84,55 @@ export class SrvRouter extends SrvMiddlewareBlueprint {
     })
   }
 
-  all(path: string, ...handlers: SrvHandlerType[]): void {
+  /**
+   * Adds a route and its handler(s) with nil method.
+   * 
+   * @param path Request path.
+   * @param handlers Route handler(s)
+   */
+  all(path: string, ...handlers: RouteHandlerType[]): void {
     this.addRoute(null, path, ...handlers)
   }
 
-  get(path: string, ...handlers: SrvHandlerType[]): void {
+  // todo add support for routes with HEAD method, after knowing why its special (if it is)
+
+  /**
+   * Adds a route and its handler(s) with GET method.
+   * 
+   * @param path Request path.
+   * @param handlers Route handler(s)
+   */
+  get(path: string, ...handlers: RouteHandlerType[]): void {
     this.addRoute('GET', path, ...handlers)
   }
 
-  post(path: string, ...handlers: SrvHandlerType[]): void {
+  /**
+   * Adds a route and its handler(s) with POST method.
+   * 
+   * @param path Request path.
+   * @param handlers Route handler(s)
+   */
+  post(path: string, ...handlers: RouteHandlerType[]): void {
     this.addRoute('POST', path, ...handlers)
   }
 
-  put(path: string, ...handlers: SrvHandlerType[]): void {
+  /**
+   * Adds a route and its handler(s) with PUT method.
+   * 
+   * @param path Request path.
+   * @param handlers Route handler(s)
+   */
+  put(path: string, ...handlers: RouteHandlerType[]): void {
     this.addRoute('PUT', path, ...handlers)
   }
 
-  del(path: string, ...handlers: SrvHandlerType[]): void {
+  /**
+   * Adds a route and its handler(s) with DELETE method.
+   * 
+   * @param path Request path.
+   * @param handlers Route handler(s)
+   */
+  del(path: string, ...handlers: RouteHandlerType[]): void {
     this.addRoute('DELETE', path, ...handlers)
   }
 }

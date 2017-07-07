@@ -1,14 +1,75 @@
-import { CtxPromiseType, SrvContext, SrvHandlerType, SrvMiddlewareBlueprint } from '@srvem/app';
-export declare class SrvRouter extends SrvMiddlewareBlueprint {
+import { Context, MiddlewareBlueprint } from '@srvem/app';
+import { RouteHandlerType } from './IRoute';
+/**
+ * Used to develop routers and server APIs with asynchronous request handlers.
+ */
+export declare class SrvRouter extends MiddlewareBlueprint {
+    /**
+     * An array to store routes.
+     */
     private routes;
+    /**
+     * An index for all route handlers; indicates progress.
+     */
     private i;
+    /**
+     * Constructs the SrvRouter middleware.
+     */
     constructor();
-    main(ctx: SrvContext): CtxPromiseType;
+    /**
+     * Filters routes by the requests method and URL, then fires thier respective handlers.
+     *
+     * @param ctx The Context
+     */
+    main(ctx: Context): Promise<void>;
+    /**
+     * Fires the next handler using this.i as the index.
+     *
+     * @param ctx The Context
+     * @param handlers Route handler(s)
+     */
     private _handleNext(ctx, handlers);
-    addRoute(method: null | 'GET' | 'POST' | 'PUT' | 'DELETE', path: string, ...handlers: SrvHandlerType[]): void;
-    all(path: string, ...handlers: SrvHandlerType[]): void;
-    get(path: string, ...handlers: SrvHandlerType[]): void;
-    post(path: string, ...handlers: SrvHandlerType[]): void;
-    put(path: string, ...handlers: SrvHandlerType[]): void;
-    del(path: string, ...handlers: SrvHandlerType[]): void;
+    /**
+     * Adds a route and its handler(s).
+     *
+     * @param method Request method
+     * @param path Request path
+     * @param handlers Route handler(s)
+     */
+    addRoute(method: string, path: string, ...handlers: RouteHandlerType[]): void;
+    /**
+     * Adds a route and its handler(s) with nil method.
+     *
+     * @param path Request path.
+     * @param handlers Route handler(s)
+     */
+    all(path: string, ...handlers: RouteHandlerType[]): void;
+    /**
+     * Adds a route and its handler(s) with GET method.
+     *
+     * @param path Request path.
+     * @param handlers Route handler(s)
+     */
+    get(path: string, ...handlers: RouteHandlerType[]): void;
+    /**
+     * Adds a route and its handler(s) with POST method.
+     *
+     * @param path Request path.
+     * @param handlers Route handler(s)
+     */
+    post(path: string, ...handlers: RouteHandlerType[]): void;
+    /**
+     * Adds a route and its handler(s) with PUT method.
+     *
+     * @param path Request path.
+     * @param handlers Route handler(s)
+     */
+    put(path: string, ...handlers: RouteHandlerType[]): void;
+    /**
+     * Adds a route and its handler(s) with DELETE method.
+     *
+     * @param path Request path.
+     * @param handlers Route handler(s)
+     */
+    del(path: string, ...handlers: RouteHandlerType[]): void;
 }

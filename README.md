@@ -1,82 +1,72 @@
 # @srvem/router
-A servem middleware used to develop routers and server APIs with asynchronous request handlers.
+A Srvem middleware used to develop routers and server APIs with asynchronous request handlers.
   
 ## Installation
 > `npm install --save @srvem @srvem/router`
   
-## Usage
-_routes/router1.ts_:
+## Example
 ```typescript
+import { Context, Srvem } from '@srvem/app'
 import { SrvRouter } from '@srvem/router'
-import { IncomingMessage, ServerResponse } from 'http'
 
-const router1 = new SrvRouter()
+// create a Srvem app
+const app: Srvem = new Srvem()
 
-router1.get('/greet',
-  async (request: IncomingMessage, response: ServerResponse, next: () => Promise<any>): Promise<any> => {
-    response.send('Hello, client!')
-  }
-)
+// create a SrvRouter and define its routes
+const router1: SrvRouter = new SrvRouter()
 
+// GET /greet
+router1.get('/greet', async (ctx: Context, next: () => Promise<void>): Promise<void> => {
+  ctx.statusCode = 200
+  ctx.body = 'Hello, world!'
+})
+
+// POST /sample/path/to/somewhere
 router1.post('/sample/path/to/somewhere',
-  async (request: IncomingMessage, response: ServerResponse, next: () => Promise<any>): Promise<any> => {
-    // some code, e.g. response time logger using `await next()`
+  async (ctx: Context, next: () => Promise<void>): Promise<void> => {
+    // some code, e.g. route handling response time logger (using `await next()`)
   },
-  async (request: IncomingMessage, response: ServerResponse, next: () => Promise<any>): Promise<any> => {
+  async (ctx: Context, next: () => Promise<void>): Promise<void> => {
     // more code, e.g. authentication and authorization
   },
-  async (request: IncomingMessage, response: ServerResponse, next: () => Promise<any>): Promise<any> => {
+  async (ctx: Context, next: () => Promise<void>): Promise<void> => {
     // even more, e.g. actual data response
   }
 )
 
-export { router1 }
-
-```
-
-_main.ts_:
-```typescript
-import { Srvem } from '@srvem/app'
-import { router1 } from './routes/router1'
-
-const app = new Srvem()
-
+// use router1
 app.use(router1)
-// more srvem middlewares can go here using app.use()
-// handlers can also be defined here using app.handle()
 
-app.start().listen(80)
+// listen on port 3000
+app.server.listen(3000)
 
 ```
   
-## Public API
+## API
 ```typescript
-// SrvMiddleware is from the '@srvem/middleware' module
-class SrvRouter extends SrvMiddleware {
+import { Context } from '@srvem/app'
 
-  addRoute(
-    method: null | 'GET' | 'POST' | 'PUT' | 'DELETE',
-    path: string,
-    ...handlers: ((request: IncomingMessage, response: ServerResponse) => void)[]
-  ): void
 
-  all(path: string, ...handlers: ((request: IncomingMessage, response: ServerResponse) => void)[]): void
-  
-  get(path: string, ...handlers: ((request: IncomingMessage, response: ServerResponse) => void)[]): void
-  
-  post(path: string, ...handlers: ((request: IncomingMessage, response: ServerResponse) => void)[]): void
-  
-  put(path: string, ...handlers: ((request: IncomingMessage, response: ServerResponse) => void)[]): void
-  
-  del(path: string, ...handlers: ((request: IncomingMessage, response: ServerResponse) => void)[]): void
 
+/**
+ * Route handler type.
+ */
+declare type RouteHandlerType = (ctx: Context, next: () => Promise<void>) => Promise<void>;
+
+/**
+ * Route type (with its handler(s)).
+ */
+interface IRoute {
+  method: string;
+  path: string;
+  handlers: RouteHandlerType[];
 }
 
 ```
   
 ## See Also
-- [@srvem/app](https://github.com/srvem/app) a super-fast and minimalist middleware-oriented and Promise-based asynchronous TypeScript server for Node.js.
-- [@srvem/static](https://github.com/srvem/static) to serve static files from a specified directory.
+- [@srvem/app](https://github.com/srvem/app) - The core package of Srvem (contains a class used to construct a Srvem app).
+- [@srvem/static](https://github.com/srvem/static) - A Srvem middleware used to serve static files from a specified directory.
   
 ## Credits
 Kaleab S. Melkie _<<kaleabmelkie@gmail.com>>_
