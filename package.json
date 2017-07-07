@@ -43,6 +43,6 @@
     "typescript": ">=2.4.1"
   },
   "dependencies": {
-    "@srvem/app": "file:..\\app"
+    "@srvem/app": "^0.5.2"
   }
 }
