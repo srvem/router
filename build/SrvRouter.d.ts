@@ -4,7 +4,7 @@ export declare class SrvRouter extends SrvMiddlewareBlueprint {
     private i;
     constructor();
     main(ctx: SrvContext): CtxPromiseType;
-    private handleNext(ctx, handlers);
+    private _handleNext(ctx, handlers);
     addRoute(method: null | 'GET' | 'POST' | 'PUT' | 'DELETE', path: string, ...handlers: SrvHandlerType[]): void;
     all(path: string, ...handlers: SrvHandlerType[]): void;
     get(path: string, ...handlers: SrvHandlerType[]): void;

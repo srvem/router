@@ -6,37 +6,41 @@ class SrvRouter extends app_1.SrvMiddlewareBlueprint {
     constructor() {
         super();
         this.routes = [];
-        this.i = null;
+        this.i = -1;
     }
     async main(ctx) {
         return new Promise((resolve, reject) => {
             const matches = this.routes.filter((route) => ctx.request.url.toLowerCase() === url_1.parse(route.path).path.toLowerCase() &&
                 (route.method === null || ctx.request.method.toUpperCase() === route.method.toUpperCase()));
-            const handlers = [];
-            for (const route of matches)
-                for (const handler of route.handlers)
-                    handlers.push(handler);
-            this.i = -1;
-            this.handleNext(ctx, handlers)
+            const merged = [];
+            for (const match of matches)
+                for (const handler of match.handlers)
+                    merged.push(handler);
+            this._handleNext(ctx, merged)
                 .then((lastCtx) => {
+                this.i = -1;
                 resolve(lastCtx);
                 return lastCtx;
             })
                 .catch((reason) => {
+                this.i = -1;
                 reject(reason);
                 return null;
             });
         });
     }
-    async handleNext(ctx, handlers) {
+    async _handleNext(ctx, handlers) {
         return new Promise((resolve, reject) => {
-            if (this.i !== null && handlers[++this.i])
-                resolve(handlers[this.i](ctx, async () => this.handleNext(ctx, handlers))
-                    .then((newerCtx) => this.handleNext(newerCtx, handlers))
+            if (handlers[++this.i])
+                handlers[this.i](ctx, async () => this._handleNext(ctx, handlers))
+                    .then((newerCtx) => {
+                    resolve(this._handleNext(newerCtx, handlers));
+                    return newerCtx;
+                })
                     .catch((reason) => {
                     reject(reason);
                     return null;
-                }));
+                });
             else
                 resolve(ctx);
         });

@@ -9,14 +9,14 @@ interface IRoute {
 
 export class SrvRouter extends SrvMiddlewareBlueprint {
   private routes: IRoute[] = []
-  private i: number = null // an index for all route handlers
+  private i: number = -1 // an index for all route handlers
 
   constructor() {
     super()
   }
 
   async main(ctx: SrvContext): CtxPromiseType {
-    return new Promise((resolve: CtxResolveType, reject: PromiseRejectType) => {
+    return new Promise((resolve: CtxResolveType, reject: PromiseRejectType): void => {
       // filter the routes matching the request
       const matches: IRoute[] = this.routes.filter(
         (route: IRoute) =>
@@ -25,36 +25,38 @@ export class SrvRouter extends SrvMiddlewareBlueprint {
       )
       
       // merge the handlers of the matched routes
-      const handlers: SrvHandlerType[] = []
-      for (const route of matches)
-        for (const handler of route.handlers)
-          handlers.push(handler)
+      const merged: SrvHandlerType[] = []
+      for (const match of matches)
+        for (const handler of match.handlers)
+          merged.push(handler)
       
       // handle the request using the 'handlers'
-      this.i = -1;
-      this.handleNext(ctx, handlers)
+      this._handleNext(ctx, merged)
         .then((lastCtx: SrvContext): SrvContext | PromiseLike<SrvContext> => {
+          this.i = -1
           resolve(lastCtx)
           return lastCtx
         })
         .catch((reason: any): never | PromiseLike<never> => {
+          this.i = -1
           reject(reason)
           return null
         })
     })
   }
 
-  private async handleNext(ctx: SrvContext, handlers: SrvHandlerType[]): CtxPromiseType {
+  private async _handleNext(ctx: SrvContext, handlers: SrvHandlerType[]): CtxPromiseType {
     return new Promise((resolve: CtxResolveType, reject: PromiseRejectType): void => {
-      if (this.i !== null && handlers[++this.i])
-        resolve(
-          handlers[this.i](ctx, async (): CtxPromiseType => this.handleNext(ctx, handlers))
-            .then((newerCtx: SrvContext): SrvContext | PromiseLike<SrvContext> => this.handleNext(newerCtx, handlers))
-            .catch((reason: any): never | PromiseLike<never> => {
-              reject(reason)
-              return null
-            })
-        )
+      if (handlers[++this.i])
+        handlers[this.i](ctx, async (): CtxPromiseType => this._handleNext(ctx, handlers)) // todo check next
+          .then((newerCtx: SrvContext): SrvContext | PromiseLike<SrvContext> => {
+            resolve(this._handleNext(newerCtx, handlers))
+            return newerCtx
+          })
+          .catch((reason: any): never | PromiseLike<never> => {
+            reject(reason)
+            return null
+          })
       else
         resolve(ctx)
     })
